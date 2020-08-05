@@ -79,7 +79,7 @@ $ kubectl create -f networking/ingress-prometheus.yaml
 
 _Use the following command to find the address Prometheus is being served on,_
 ```
-$ kubectl get ingress prometheus-ingress
+$ kubectl get svc -n istio-system 
 ```
 
 Optional: Create the Grafana resources from the `grafana/` folder, (you still have to add the datasource, for `URL` use the ip from the Prometheus `service` e.g. http://10.59.253.76:9090, and `Access: Proxy`)
@@ -89,25 +89,8 @@ $ kubectl create -f grafana/service-grafana.yaml
 $ kubectl create -f grafana/ingress-grafana.yaml
 ```
 
-Add patience, and _use the following command to find the address Grafana is being served on,_
+Use the following command to find the address Grafana is being served on,_
 ```
-$ kubectl get ingress grafana-ingress
+$ kubectl get svc -n istio-system 
 ```
 
-# Infrequently Asked Questions:
-
-## Q: Why?!
-A: Because I wanted to run _something_ in kubernetes, and Prometheus seemed like a great idea, because it'd allow me to visualize stuff running in my cluster!
-
-## Q: Why are you exposing Prometheus to the world?!
-A: .. Well it's not ideal. But I got to set up a loadbalancer for _something_ running in Kubernetes, and expose it to the world, and now I can quickly see what's happening in my demo cluster. I mean, set up some firewall rules and you're (sort of) golden!
-
-## Q: Why is the `retainPolicy` of the Prometheus `PV`, `Delete`?
-Because the `PV` is created automatically by a `PVC`.
-If you need `Retain` either edit the `PV` after it's been created, or create a `PV`-spec.
-
-# Roadmap
-
-- Add dashboards now that I've bumped to v5
-- Datasources as code
-- ~~Upgrade Grafana to v5 for more Config as Code!~~
