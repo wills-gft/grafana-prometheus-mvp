@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: prometheus
+  name: prometheus
+  namespace: istio-system
+spec:
+  replicas: 2
+  serviceName: "prometheus"
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccount: prometheus
+      initContainers:
+      - name: "init-chown-data"
+        image: "busybox"
+        # Prometheus runs as nobody:nobody
+        command: ["chown", "-R", "65534:65534", /var/prometheus/data]
+        volumeMounts:
+        - name: prometheus-claim-tmpl
+          mountPath: /var/prometheus/data
+      containers:
+      - image: quay.io/prometheus/prometheus:v2.1.0
+        name: prometheus
+        command:
+        - "/bin/prometheus"
+        args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --storage.tsdb.path=/var/prometheus/data
+        - --storage.tsdb.retention=24h
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/prometheus
+          name: prometheus-claim-tmpl
+        - mountPath: "/etc/prometheus"
+          name: config-volume
+        # Define a liveness probe endpoint
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/healthy
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        # Define the readiness endpoint for the health check
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/ready
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        resources:
+          requests:
+            cpu: 20m
+            memory: 100Mi
+          limits:
+            cpu: 50m
+            memory: 1500Mi
+      volumes:
+      - configMap:
+          name: prometheus-config
+        name: config-volume
+      nodeSelector:
+        purpose: infrastructure
+  volumeClaimTemplates:
+  - metadata:
+      name: prometheus-claim-tmpl
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter-daemonset
+  namespace: kube-system
+  labels:
+    k8s-app: node-exporter
+spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 100% # just kill pods and create new ones
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      name: node-exporter
+  template:
+    metadata:
+      labels:
+        name: node-exporter
+      annotations:
+        prometheus.io/scrape: "true" # very much needed......
+        # prometheus.io/port: "9100" # not needed since prometheus will use the containerPort 9100
+    spec:
+      securityContext:
+        runAsNonRoot: true # allow running as nobody
+        runAsUser: 65534 # run as user-nobody
+      hostNetwork: true # using docker --net="host"
+      hostPID: true # using docker --pid="host"
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      containers:
+      - name: node-exporter
+        image: quay.io/prometheus/node-exporter
+        args:
+        # - "--web.listen-address=127.0.0.1:9101" # default port is 9100 but customizable here
+        - "--path.procfs=/host/proc"
+        - "--path.sysfs=/host/sys"
+        resources:
+          requests:
+            cpu: 2m
+            memory: 30Mi
+          limits:
+            cpu: 10m
+            memory: 50Mi
+        ports:
+        - containerPort: 9100
+          protocol: TCP
+        volumeMounts:
+        - name: proc
+          readOnly: true
+          mountPath: /host/proc
+        - name: sys
+          readOnly: true
+          mountPath: /host/sys
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc # instead of /host/proc (on GKE the vm's don't have a /host folder)
+      - name: sys
+        hostPath:
+          path: /sys # instead of /host/sys
+
