@@ -1,10 +1,10 @@
 # An MVP for running Prometheus in GKE
 
-Kubernetes in Google Kubernetes Engine, running Prometheus 2.1.0, scraping Kubernetes, itself and data from the nodes in the cluster.
+Kubernetes in Google Kubernetes Engine, running Prometheus (Latest), scraping Kubernetes, itself and data from the nodes in the cluster.
 
 Now with Persistent Volume on Prometheus! (so you can `delete` the Prometheus pod without losing data..)
 
-Now with Grafana 5.2.2! (You still have to configure the Datasources manually because.. I'm in the making of doing this.)
+Now with Latest! (You still have to configure the Datasources manually because.. I'm in the making of doing this.)
 
 Inspired heavily by https://coreos.com/blog/monitoring-kubernetes-with-prometheus.html from August 03, 2016.
 
@@ -24,8 +24,8 @@ NB: remember to use the email associated with your GCP account
 1. Run `setup.sh`
 1. Wait about 10-15 minutes before the loadbalancers start serving traffic
 1. Configure Prometheus `data source` in Grafana
-1. ???
-1. Profit!
+
+
 
 ## Cleanup
 
