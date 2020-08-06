@@ -6,7 +6,7 @@ Now with Persistent Volume on Prometheus! (so you can `delete` the Prometheus po
 
 Now with Latest! (You still have to configure the Datasources manually because.. I'm in the making of doing this.)
 
-Inspired heavily by https://coreos.com/blog/monitoring-kubernetes-with-prometheus.html from August 03, 2016.
+
 
 ## Requirements
 
